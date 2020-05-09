@@ -42,7 +42,7 @@ ax.set_xlabel('Sentence length')
 ax.set_title('Sentences length distribution')
 ax.set_xticks(x_axis)
 ax.set_xticklabels(keys)
-fig.savefig(SENT_DIS, format='svg')
+fig.savefig(SENT_DIS, format='png')
 
 neutral_samples = cleaned_dataset.query("sentiment == 'neutral'")
 neutral_counter = Counter()
@@ -103,7 +103,7 @@ ax[0][0].bar(neutral_keys, neutral_nums, width=0.5)
 ax[0][1].bar(positive_keys, positive_nums, width=0.5)
 ax[0][2].bar(negative_keys, negative_nums, width=0.5)
 
-fig.savefig(SENTIMENT_DIS, format='svg')
+fig.savefig(SENTIMENT_DIS, format='png')
 
 split_lens = [len(sent.strip().split()) for sent in sentences]
 larger_1_indices = [i for i, j in enumerate(split_lens) if j > 1]
@@ -162,4 +162,4 @@ ax[0][0].bar(less_2_keys, less_2_nums, width=0.5)
 ax[0][1].bar(less_3_keys, less_3_nums, width=0.5)
 ax[0][2].bar(less_4_keys, less_4_nums, width=0.5)
 
-fig.savefig(SENTIMENT_CONDITION_DIS, format='svg')
+fig.savefig(SENTIMENT_CONDITION_DIS, format='png')
