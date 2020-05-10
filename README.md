@@ -5,7 +5,7 @@ In this project we use both recurrent neural models and Transformer-based neural
 - We're trying to predict the *selected text* of each example, where the excerpt from the original tweet should best support the sentiment characterization.
 - The **figs** folder contains all the plots that we used in the report paper. It provides two both 'svg' and 'png' versions of the plots.
 - Folder **logs** includes the jaccard score records for experiments.
-- Folder **src** includes all the significant files for training our models. The file **recurrent_models.py** includes the training file for reucrrent neural models modified from a colab notebook. The **starter.py** includes the necessary scripts for ploting. The rest of files are for different parts of the BERT models.
+- Folder **src** includes all the significant files for training our models. The file `recurrent_models.py` includes the training file for reucrrent neural models modified from a colab notebook. The `starter.py` includes the necessary scripts for ploting. The rest of files are for different parts of the BERT models.
 - Our report paper can be found [here](https://github.com/mathfather/Tweet-Sentiment-Extraction/blob/master/report.pdf).
 ## Requirements
 
@@ -32,4 +32,4 @@ To run the best recurrent model, run `python3 recurrent_models.py -i train_file_
 
 ### BERT models
 
-To reproduce BERT model experiments, you can directly run **BertBaseWithOutSentiment.py** and **BertBaseWithSentiment.py** under the folder **src**. Some hpyerparameters can be changed, and the way of making modifications is indicated in the scripts.
+To reproduce BERT model experiments, you can directly run `BertBaseWithOutSentiment.py` and `BertBaseWithSentiment.py` under the folder **src**. Some hpyerparameters can be changed, and the way of making modifications is indicated in the scripts.
