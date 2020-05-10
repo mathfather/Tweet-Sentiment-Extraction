@@ -19,8 +19,8 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 import tensorflow as tf
 import numpy as np
 import tensorflow.keras as keras
-from keras.models import Sequential
-from keras.layers import Embedding, LSTM, Dropout,Dense, Bidirectional, dot
+from keras.models import Model
+from keras.layers import Embedding, LSTM, Dropout,Dense, Bidirectional, dot, Input, concatenate
 from keras import optimizers
 from keras import backend as K
 # !pip install transformers
@@ -30,14 +30,21 @@ from torch.utils.data import TensorDataset, random_split
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from nltk.corpus import stopwords
+import argparse
+import random
 # nltk.download('stopwords')
-
+random.seed(233)
 STOPWORDS = set(stopwords.words('english'))
+args = argparse.ArgumentParser(description='Program description.')
+args.add_argument('-i','--input-file', type=str, help='Input file', default='../data/train.csv')
+args.add_argument('-t','--test-file', type=str, help='Test file', default='../data/test.csv')
+args.add_argument('-em','--embedding-file', type=str, help='Embedding file', default='../embedding/glove.twitter.27B.25d.txt')
+args = args.parse_args()
 
 # original file run on Google Colab
-train_file_path = '/content/drive/My Drive/Colab Notebooks/tweet_sentiment_extract_kaggle/train.csv'
-test_file_path = '/content/drive/My Drive/Colab Notebooks/tweet_sentiment_extract_kaggle/test.csv'
-# embedding_file_path = '/content/drive/My Drive/Colab Notebooks/wiki-news-300d-1M.vec'
+train_file_path = args.input_file
+test_file_path = args.test_file
+embedding_file_path = args.embedding_file
 
 train_facts = pd.read_csv(train_file_path)
 test_facts = pd.read_csv(test_file_path)
@@ -72,8 +79,8 @@ train_comb_texts = train_facts_drop['comb'].tolist()
 
 
 print('length of all train texts: ', len(train_facts_drop))
-print('length of all test texts: ', len(test_comb_texts))
-print('Example combined sentences: ', test_comb_texts[:5])
+# print('length of all test texts: ', len(test_comb_texts))
+# print('Example combined sentences: ', test_comb_texts[:5])
 
 # no textual preprocessing needed, because you'll be comparing the textual similarity
 # for example no case normalization
@@ -102,9 +109,9 @@ assert train_facts_drop['text'][23876][start_in_text[23876]:end_in_text[23876]] 
 train_size = int(len(train_facts_drop) * 0.85)
 train_size = 23360
 all_texts = train_comb_texts
-print('example text: ', all_texts[0])
-print('example selected text: ', train_facts_drop['selected_text'][0])
-print('example start and end: ', start[0], end[0])
+# print('example text: ', all_texts[0])
+# print('example selected text: ', train_facts_drop['selected_text'][0])
+# print('example start and end: ', start[0], end[0])
 train_texts = all_texts[0: train_size]
 train_start = start[:train_size]
 train_end = end[:train_size]
@@ -119,7 +126,7 @@ tokenizer = Tokenizer( oov_token=OOV, lower=False) # filters=
 tokenizer.fit_on_texts(train_texts)
 word_index = tokenizer.word_index 
 print('length of vocab: ', len(word_index))
-print('OOV index: ',word_index[OOV])
+# print('OOV index: ',word_index[OOV])
 
 # Turn each text into a sequence of integer word IDs
 train_sequences = tokenizer.texts_to_sequences(train_texts)
@@ -130,7 +137,7 @@ validation_sequences = tokenizer.texts_to_sequences(validation_texts)
 validation_padded = pad_sequences(validation_sequences, maxlen=max_length, padding='post', truncating='post')
 
 print('train padded shape: ', train_padded.shape)
-print('train_padded example ', train_padded[0])
+# print('train_padded example ', train_padded[0])
 print('val padded shape: ', validation_padded.shape)
 
 
@@ -155,7 +162,8 @@ train_tweets = all_tweets[:train_size] # not tokenized, list of strings
 val_tweets = all_tweets[train_size:] # not tokenized, list of strings
 
 
-# one-hot encode sentiment: positive [1,0,0] neutral=[0,1,0], negative=[0,0,1]; for auxiliary input
+# one-hot encode sentiment:
+# positive [1,0,0] neutral=[0,1,0], negative=[0,0,1]; for auxiliary input
 train_sentiment_oh = np.zeros((len(train_sentiment), 3))
 for i, senti in enumerate(train_sentiment):
   if senti=='positive': 
@@ -186,7 +194,8 @@ assert len(validation_start_in_text) == len(validation_end_in_text)
 assert len(validation_start_in_text) == len(val_tweets)
 assert len(train_start_in_text) == len(train_tweets)
 
-assert val_tweets[516][validation_start_in_text[516]:validation_end_in_text[516]] == train_facts_drop['selected_text'][23876]
+assert val_tweets[516][validation_start_in_text[516]:validation_end_in_text[516]] \
+       == train_facts_drop['selected_text'][23876]
 
 # one-hot encode the start and end indices
 train_label_hot = np.zeros(train_padded.shape)
@@ -242,27 +251,10 @@ def jaccard(str1, str2):
     b = set(str2.lower().split())
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
-#
-# def compute_score(start_gold, start_pred, end_gold, end_pred, orig_text):
-#   # text body is the original textual data to refer back to
-#   # start_gold, end_gold is list of batch
-#   # start_pred and end pred need to be argmax'ed
-#   texts = []
-#   print(orig_text[:10])
-#
-#   pred_start_flat = torch.argmax(start_pred, axis=1).flatten()
-#   pred_end_flat = torch.argmax(end_pred, axis=1).flatten()
-#   pred_text = [t[pred_start_flat[i]: pred_end_flat[i]+1] for i, t in enumerate(orig_text)]
-#   print('predicted text: ', pred_text)
-#   gold_text = [t[start_gold[i]: end_gold[i]+1] for i, t in enumerate(orig_text)]
-#   print('gold text: ', gold_text)
-#   j_scores = [jaccard(gold_t, pred_text[i]) for i, gold_t in enumerate(gold_text)]
-#   # j_scores.append(j_score)
-#   return j_scores
 
-embedding_file_path = '/content/drive/My Drive/Colab Notebooks/glove.twitter.27B.25d.txt'
-def load_embedding(file_path, vocab, embedding_size): 
+def load_embedding(file_path, vocab, embedding_size):
   # vocab: {word: idx}
+  print('loading embedding...')
   embedding_matrix = np.zeros((len(vocab)+1, embedding_size ))
   with open(file_path, encoding='utf8') as f:
     for line in f:
@@ -282,19 +274,17 @@ reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
 
 def decode_text(text):
     return ' '.join([reverse_word_index.get(i, '?') for i in text])
-print(decode_text(train_padded[0]))
-print('---')
-print(train_texts[0])
+# print(decode_text(train_padded[0]))
+# print('---')
+# print(train_texts[0])
 print('length of vocabulary: ', len(word_index))
 
 embed_matrix = load_embedding(embedding_file_path, word_index, 25)
 # assert embed_matrix.shape[0] == len(word_index)
-print(embed_matrix[22935]) # the last entry
-print(embed_matrix.shape )
 
-print('neutral ', embed_matrix[word_index['neutral']])
-print('positive ', embed_matrix[word_index['positive']])
-print('negative ', embed_matrix[word_index['negative']])
+# print('neutral ', embed_matrix[word_index['neutral']])
+# print('positive ', embed_matrix[word_index['positive']])
+# print('negative ', embed_matrix[word_index['negative']])
 
 # ===========================================
 # ============= MODELS ======================
@@ -370,26 +360,27 @@ model2 = Model(input=[tweet_input, sentiment_input_oh], output=[start_logits2, e
 model2.compile(optimizer='adam', loss='categorical_crossentropy',
                loss_weights=[0.04, 0.04], metrics=['accuracy','cosine_proximity'] )
 print(model2.summary())
-keras.utils.plot_model(model2, 'lstm_aux_input.png', show_shapes=True)
+# keras.utils.plot_model(model2, 'lstm_aux_input.png', show_shapes=True)
 
 ##########################
-model3 = Model(input=[tweet_input, senti_input], output=[start_logits3, end_logits3])
+model3 = Model(input=[tweet_input_batched, senti_input], output=[start_logits3, end_logits3])
 # optimizer = Adam
 model3.compile(optimizer='adam', loss='categorical_crossentropy', 
                loss_weights=[0.04, 0.04], metrics=['accuracy','cosine_proximity'] )
 print(model3.summary())
-keras.utils.plot_model(model3, 'lstm_both_embed.png', show_shapes=True)
+# keras.utils.plot_model(model3, 'lstm_both_embed.png', show_shapes=True)
 
 # history = model2.fit(train_padded, [train_start_hot, train_end_hot], epochs=10, verbose=2, batch_size=64)
 
+print('training model2, with auxiliary sentiment input...\n')
 history2 = model2.fit([train_padded_tweet, train_sentiment_oh], [train_start_in_text_hot, train_end_in_text_hot],
                      epochs=10, verbose=2, batch_size=64
                      )
-
-history3 = model3.fit([train_padded_tweet, tr_sentiment_seq],
-                     [train_start_in_text_hot, train_end_in_text_hot],
-                     epochs=10, verbose=2, batch_size=64
-                     )
+#
+# history3 = model3.fit([train_padded_tweet, tr_sentiment_seq],
+#                      [train_start_in_text_hot, train_end_in_text_hot],
+#                      epochs=10, verbose=2, batch_size=64
+#                      )
 
 
 ###########
