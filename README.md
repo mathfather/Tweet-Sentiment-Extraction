@@ -28,7 +28,7 @@ In this project we use both recurrent neural models and Transformer-based neural
 
 ### Recurrent neural models
 
-To run the best recurrent model, run `python3 src/recurrent_models.py -i train_file_path -em embedding_file_path`. Other implementation details can also be found in the `src/recurrent_models.py` script.
+To run the best recurrent model, run `python3 src/recurrent_models.py -i train_file_path -em embedding_file_path`. Other implementation details can also be found in the `src/recurrent_models.py` script. The training data and embedding data can be found in data/ and embedding/ directories respectively.
 
 ### BERT models
 
