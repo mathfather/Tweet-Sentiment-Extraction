@@ -11,7 +11,8 @@ In this project we use both recurrent neural models and Transformer-based neural
 
 ### Recurrent neural models
 
-TODO
+- used GloVe.Twitter 25d file for embedding
+- tensorflow == 2.2.0
 
 ### BERT models
 
@@ -27,7 +28,7 @@ TODO
 
 ### Recurrent neural models
 
-TODO
+To run the best recurrent model, run `python3 recurrent_models.py -i train_file_path -em embedding_file_path`. Other implementation details can also be found in the `recurrent_models.py` script.
 
 ### BERT models
 
