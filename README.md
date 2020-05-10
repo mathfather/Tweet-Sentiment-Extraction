@@ -32,7 +32,7 @@ To run the best recurrent model, run `python3 src/recurrent_models.py -i train_f
 
 ### BERT models
 
-To reproduce BERT model experiments, you can directly run `BertBaseWithOutSentiment.py` and `BertBaseWithSentiment.py` under the folder **src**. Some hpyerparameters can be changed, and the way of making modifications is indicated in the scripts. Note that you should download the BERT base model to local folder **bert_base** under the **models** folder. For your reference you can download the the corresponding files from these source:
+To reproduce BERT model experiments, you can directly run `BertBaseWithOutSentiment.py` and `BertBaseWithSentiment.py` under the folder **src**. Some hpyerparameters can be changed, and the way of making modifications is indicated in the scripts. Note that you should download the BERT base model to local folder **bert_base** under the **models** folder before you actually run the experiments. For your reference you can download the the corresponding files from these source:
 
 - vocab : https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt
 - config : https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-config.json
